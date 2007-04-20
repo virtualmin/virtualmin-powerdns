@@ -1,0 +1,15 @@
+$DOM		SOA	2400	ns1.textdrive.com dns.textdrive.com 2005012001 3600 3600 604800 7200
+$DOM		NS	2400	dns1.textdrive.com
+$DOM		NS	2400	dns2.textdrive.com
+$DOM		NS	2400	dns3.textdrive.com
+$DOM		NS	2400	dns4.textdrive.com
+$DOM		MX	2400	mail.$DOM
+$DOM		A	2400	$IP
+www.$DOM	A	2400	$IP
+mail.$DOM	A	2400	$IP
+mysql.$DOM	A	2400	$IP
+lists.$DOM	A	2400	$IP
+svn.$DOM	A	2400	$IP
+localhost.$DOM	A	2400	$IP
+$DOM		TXT	2400	v=spf1 a:mail.textdrive.com ?all
+*.$DOM		A	2400	$IP

@@ -1,0 +1,35 @@
+feat_name=PowerDNS Domain
+feat_disname=PowerDNS domain
+feat_label=Enable PowerDNS domain?
+feat_losing=The PowerDNS domain and all records that it contains will be deleted
+feat_edb=An error occurred connecting to the MySQL database : $1
+feat_clash=This domain already exists in PowerDNS
+feat_etable=The PowerDNS table $1 was not found in the database
+
+index_title=PowerDNS Domains
+index_edb=An error occurred connecting to the MySQL database : $1. Check the <a href='$2'>module configuration</a> to ensure that all settings are correct.
+index_name=Record name
+index_type=Type
+index_ttl=TTL
+index_value=Value
+index_save=Save Template
+index_header=Template Records for New Domains
+
+save_err=Failed to save template
+save_ettl=Missing or invalid TTL for $1 in row $2
+save_evalue=Missing value for $1 in row $2
+save_esoa=Missing SOA record!
+save_ename=Invalid name in row $2
+
+setup_dom=Adding PowerDNS domain ..
+setup_fixed=.. updated IPs in existing domain.
+
+delete_dom=Deleting PowerDNS domain ..
+delete_missing=.. not found in database!
+
+backup_dom=Backing up PowerDNS database entries for domain ..
+
+restore_dom=Restoring PowerDNS database entries for domain ..
+
+save_dom=Renaming PowerDNS domain ..
+save_ip=Update IP in PowerDNS domain ..

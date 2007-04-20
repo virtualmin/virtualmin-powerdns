@@ -1,0 +1,4 @@
+host=Database server host,3,localhost
+db=Database name,0
+user=Login for database,0
+pass=Password for login,12
