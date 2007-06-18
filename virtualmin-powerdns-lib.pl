@@ -2,11 +2,12 @@
 do '../web-lib.pl';
 &init_config();
 do '../ui-lib.pl';
-use DBI;
 
 # connect_to_database()
 sub connect_to_database
 {
+eval "use DBI;";
+return $@ if ($@);
 local ($dbh, $err);
 eval {
 	local $drh = DBI->install_driver("mysql");
