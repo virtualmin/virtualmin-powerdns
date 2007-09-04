@@ -26,6 +26,7 @@ setup_fixed=.. updated IPs in existing domain.
 
 delete_dom=Deleting PowerDNS domain ..
 delete_missing=.. not found in database!
+delete_notfor=.. records are no longer for the IP address $1
 
 backup_dom=Backing up PowerDNS database entries for domain ..
 

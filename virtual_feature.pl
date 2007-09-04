@@ -191,13 +191,26 @@ sub feature_delete
 local $dbh = &connect_to_database();
 local $id = &domain_id($dbh, $_[0]->{'dom'});
 if ($id) {
-	local $delreccmd = $dbh->prepare("delete from records where domain_id = ?");
-	$delreccmd->execute($id);
-	$delreccmd->finish();
-	local $deldomcmd = $dbh->prepare("delete from domains where id = ?");
-	$deldomcmd->execute($id);
-	$deldomcmd->finish();
-	&$virtual_server::second_print($virtual_server::text{'setup_done'});
+	# Check first if any IPs are for this sytem
+	local $myipcmd =  $dbh->prepare("select count(*) from records where domain_id = ? and content = ?");
+	$myipcmd->execute($id, $_[0]->{'ip'});
+	local ($count) = $myipcmd->fetchrow();
+	$myipcmd->finish();
+
+	if ($count) {
+		# Delete the domain and records
+		local $delreccmd = $dbh->prepare("delete from records where domain_id = ?");
+		$delreccmd->execute($id);
+		$delreccmd->finish();
+		local $deldomcmd = $dbh->prepare("delete from domains where id = ?");
+		$deldomcmd->execute($id);
+		$deldomcmd->finish();
+		&$virtual_server::second_print($virtual_server::text{'setup_done'});
+		}
+	else {
+		&$virtual_server::second_print(
+			&text('delete_notfor', $_[0]->{'ip'}));
+		}
 	}
 else {
 	&$virtual_server::second_print($text{'delete_missing'});
