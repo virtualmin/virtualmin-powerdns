@@ -31,6 +31,11 @@ sub feature_label
 return $text{'feat_label'};
 }
 
+sub feature_hlink
+{
+return "label";
+}
+
 # feature_check()
 # Returns undef if all the needed programs for this feature are installed,
 # or an error message if not
@@ -69,13 +74,14 @@ return undef;
 sub feature_clash
 {
 if (!$_[1] || $_[1] eq 'dom') {
-	local $dbh = &connect_to_database();
-	local $cmd = $dbh->prepare("select name from domains where name = ? and type = 'NATIVE'");
-	$cmd->execute($_[0]->{'dom'});
-	local ($clash) = $cmd->fetchrow();
-	$cmd->finish();
-	$dbh->disconnect();
-	return $clash ? &text('feat_clash') : undef;
+	# Clash checking disabled, as we can replace existing domains
+	#local $dbh = &connect_to_database();
+	#local $cmd = $dbh->prepare("select name from domains where name = ? and type = 'NATIVE'");
+	#$cmd->execute($_[0]->{'dom'});
+	#local ($clash) = $cmd->fetchrow();
+	#$cmd->finish();
+	#$dbh->disconnect();
+	#return $clash ? &text('feat_clash') : undef;
 	}
 return undef;
 }
