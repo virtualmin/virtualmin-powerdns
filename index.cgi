@@ -10,16 +10,12 @@ if (!$dbh) {
 		&ui_config_link('index_edb', [ $err, undef ]));
 	}
 
-# Show template
-print "<font size=+1>$text{'index_header'}</font><br>\n";
-print &ui_form_start("save.cgi", "post");
-print &ui_columns_start([ $text{'index_name'},
-			  $text{'index_type'},
-			  $text{'index_ttl'},
-			  $text{'index_value'} ]);
+# Show template DNS records
+print &ui_subheading($text{'index_header'});
 $i = 0;
+@table = ( );
 foreach $t (&get_template(), { }, { }) {
-	print &ui_columns_row([
+	push(@table, [
 		&ui_textbox("name_$i", $t->{'name'}, 20),
 		&ui_select("type_$i", $t->{'type'},
 			[ [ "A" ], [ "NS" ], [ "SOA" ], [ "MX" ],
@@ -29,8 +25,18 @@ foreach $t (&get_template(), { }, { }) {
 		]);
 	$i++;
 	}
-print &ui_columns_end();
-print &ui_form_end([ [ "save", $text{'index_save'} ] ]);
+print &ui_form_columns_table(
+	"save.cgi",
+	[ [ "save", $text{'index_save'} ] ],
+	undef,
+	undef,
+	undef,
+	[ $text{'index_name'}, $text{'index_type'},
+	  $text{'index_ttl'}, $text{'index_value'} ],
+	undef,
+	\@table,
+	undef,
+	1);
 
 &ui_print_footer("/", $text{'index'});
 
