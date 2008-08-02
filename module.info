@@ -3,3 +3,4 @@ category=servers
 perldepends=DBI DBD::mysql
 depends=virtual-server/2.40 1.420
 version=1.6
+feedback=jcameron@webmin.com
