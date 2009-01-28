@@ -105,8 +105,9 @@ local $dbh = &connect_to_database();
 local $id = &domain_id($dbh, $_[0]->{'dom'});
 if ($id) {
 	# Yes! Just update IPs
+	local $newip = $_[0]->{'dns_ip'} || $_[0]->{'ip'};
 	local $fixcmd = $dbh->prepare("update records set content = ? where domain_id = ? and type = 'A'");
-	$fixcmd->execute($_[0]->{'ip'}, $id);
+	$fixcmd->execute($newip, $id);
 	$fixcmd->finish();
 	&$virtual_server::second_print($text{'setup_fixed'});
 	}
@@ -171,13 +172,15 @@ if ($_[0]->{'dom'} ne $_[1]->{'dom'}) {
 		&$virtual_server::second_print($text{'delete_missing'});
 		}
 	}
-if ($_[0]->{'ip'} ne $_[1]->{'ip'}) {
+local $newip = $_[0]->{'dns_ip'} || $_[0]->{'ip'};
+local $oldip = $_[1]->{'dns_ip'} || $_[1]->{'ip'};
+if ($newip ne $oldip) {
 	# IP has changed .. update all records
 	&$virtual_server::first_print($text{'save_dom'});
 	local $id = &domain_id($dbh, $_[0]->{'dom'});
 	if ($id) {
 		local $ipcmd = $dbh->prepare("update records set content = ? where domain_id = ? and content = ?");
-		$ipcmd->execute($_[0]->{'ip'}, $id, $_[1]->{'ip'});
+		$ipcmd->execute($newip, $id, $oldip);
 		$ipcmd->finish();
 		&$virtual_server::second_print(
 			$virtual_server::text{'setup_done'});
