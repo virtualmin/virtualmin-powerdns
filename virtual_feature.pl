@@ -202,7 +202,8 @@ local $id = &domain_id($dbh, $_[0]->{'dom'});
 if ($id) {
 	# Check first if any IPs are for this sytem
 	local $myipcmd =  $dbh->prepare("select count(*) from records where domain_id = ? and content = ?");
-	$myipcmd->execute($id, $_[0]->{'ip'});
+	local $ip = $_[0]->{'dns_ip'} || $_[0]->{'ip'};
+	$myipcmd->execute($id, $ip);
 	local ($count) = $myipcmd->fetchrow();
 	$myipcmd->finish();
 
@@ -218,7 +219,7 @@ if ($id) {
 		}
 	else {
 		&$virtual_server::second_print(
-			&text('delete_notfor', $_[0]->{'ip'}));
+			&text('delete_notfor', $ip));
 		}
 	}
 else {
