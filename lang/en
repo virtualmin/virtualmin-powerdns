@@ -34,3 +34,4 @@ restore_dom=Restoring PowerDNS database entries for domain ..
 
 save_dom=Renaming PowerDNS domain ..
 save_ip=Update IP in PowerDNS domain ..
+__norefs=1
