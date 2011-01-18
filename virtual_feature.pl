@@ -165,6 +165,7 @@ if ($_[0]->{'dom'} ne $_[1]->{'dom'}) {
 			$fixcmd->finish();
 			}
 		$reccmd->finish();
+		&bump_domain_soa($dbh, $id);
 		&$virtual_server::second_print(
 			$virtual_server::text{'setup_done'});
 		}
@@ -182,6 +183,7 @@ if ($newip ne $oldip) {
 		local $ipcmd = $dbh->prepare("update records set content = ? where domain_id = ? and content = ?");
 		$ipcmd->execute($newip, $id, $oldip);
 		$ipcmd->finish();
+		&bump_domain_soa($dbh, $id);
 		&$virtual_server::second_print(
 			$virtual_server::text{'setup_done'});
 		}
@@ -323,6 +325,25 @@ local ($dbh) = @_;
 local $inccmd = $dbh->prepare("UPDATE records_seq SET id=(SELECT MAX(r.id) FROM records r)");
 $inccmd->execute();
 $inccmd->finish();
+}
+
+# bump_domain_soa(&dbh, id)
+# Bump the SOA by 1 in a domain
+sub bump_domain_soa
+{
+local ($dbh, $id) = @_;
+my $cmd = $dbh->prepare("select content from records where domain_id = ? and type = 'SOA'");
+$cmd->execute($id);
+my $content = $cmd->fetchrow();
+$cmd->finish();
+if ($content) {
+	local @w = split(/\s+/, $content);
+	$w[2]++;
+	$content = join(" ", @w);
+	$cmd = $dbh->prepare("update records set content = ? where domain_id = ? and type = 'SOA'");
+	$cmd->execute($content, $id);
+	$cmd->finish();
+	}
 }
 
 1;
