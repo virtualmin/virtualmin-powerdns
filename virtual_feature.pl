@@ -127,15 +127,18 @@ else {
 	foreach $r (&get_template()) {
 		$reccmd->execute(
 			$id,
-			&virtual_server::substitute_template($r->{'name'}, $_[0]),
+			&virtual_server::substitute_template($r->{'name'},
+							     $_[0]),
 			$r->{'type'},
 			$r->{'ttl'},
 			0,
-			&virtual_server::substitute_template($r->{'value'}, $_[0])
+			&virtual_server::substitute_template($r->{'value'},
+							     $_[0])
 			);
 		$reccmd->finish();
 		}
 	$reccmd->finish();
+	&bump_domain_soa($dbh, $id);
 	&increment_record_seq($dbh);
 	&$virtual_server::second_print($virtual_server::text{'setup_done'});
 	}
