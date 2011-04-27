@@ -16,7 +16,7 @@ eval {
 			     $config{'user'}, $config{'pass'}, { });
 	};
 if ($@ || !$dbh) {
-	$err = $@ || "unknown error";
+	$err = $@ || "Unknown error";
 	}
 $err =~ s/\s+at\s+.*//;
 return wantarray ? ($dbh, $err) : $dbh;
