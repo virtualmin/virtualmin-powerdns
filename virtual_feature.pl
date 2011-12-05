@@ -124,15 +124,16 @@ else {
 	# Add the records
 	local $reccmd = $dbh->prepare("insert into records (domain_id, name, type, ttl, prio, content) values (?, ?, ?, ?, ?, ?)");
 	local $r;
-	local $v = &virtual_server::substitute_template($r->{'value'}, $_[0]);
-	local $prio = 0;
-	if (uc($r->{'type'}) eq 'MX' &&
-	    $v =~ /^(\d+)\s+(\S+)$/) {
-		# Split up MX priority and hostname
-		$prio = $1;
-		$v = $2;
-		}
 	foreach $r (&get_template()) {
+		local $v = &virtual_server::substitute_template(
+				$r->{'value'}, $_[0]);
+		local $prio = 0;
+		if (uc($r->{'type'}) eq 'MX' &&
+		    $v =~ /^(\d+)\s+(\S+)$/) {
+			# Split up MX priority and hostname
+			$prio = $1;
+			$v = $2;
+			}
 		$reccmd->execute(
 			$id,
 			&virtual_server::substitute_template($r->{'name'},
