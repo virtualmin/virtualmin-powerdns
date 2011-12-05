@@ -324,17 +324,23 @@ else {
 sub increment_domain_seq
 {
 local ($dbh) = @_;
-local $inccmd = $dbh->prepare("UPDATE domains_seq SET id=(SELECT MAX(d.id) FROM domains d)");
-$inccmd->execute();
-$inccmd->finish();
+eval {
+	# Ignore failures, as some systems don't have this table
+	local $inccmd = $dbh->prepare("UPDATE domains_seq SET id=(SELECT MAX(d.id) FROM domains d)");
+	$inccmd->execute();
+	$inccmd->finish();
+	};
 }
 
 sub increment_record_seq
 {
 local ($dbh) = @_;
-local $inccmd = $dbh->prepare("UPDATE records_seq SET id=(SELECT MAX(r.id) FROM records r)");
-$inccmd->execute();
-$inccmd->finish();
+eval {
+	# Ignore failures, as some systems don't have this table
+	local $inccmd = $dbh->prepare("UPDATE records_seq SET id=(SELECT MAX(r.id) FROM records r)");
+	$inccmd->execute();
+	$inccmd->finish();
+	};
 }
 
 # bump_domain_soa(&dbh, id)
