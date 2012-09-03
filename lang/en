@@ -1,6 +1,7 @@
 feat_name=PowerDNS Domain
 feat_disname=PowerDNS domain
 feat_label=Enable PowerDNS domain?
+feat_label2=PowerDNS domain
 feat_losing=The PowerDNS domain and all records that it contains will be deleted
 feat_edb=An error occurred connecting to the MySQL database : $1
 feat_clash=This domain already exists in PowerDNS
