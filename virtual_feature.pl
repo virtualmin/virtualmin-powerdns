@@ -283,9 +283,11 @@ if ($id) {
 	$cmd->finish();
 	&close_tempfile(BFILE);
 	&$virtual_server::second_print($virtual_server::text{'setup_done'});
+	return 1;
 	}
 else {
 	&$virtual_server::second_print($text{'delete_missing'});
+	return 0;
 	}
 }
 
@@ -316,9 +318,11 @@ if ($id) {
 	close(BFILE);
 	&increment_record_seq($dbh);
 	&$virtual_server::second_print($virtual_server::text{'setup_done'});
+	return 1;
 	}
 else {
 	&$virtual_server::second_print($text{'delete_missing'});
+	return 0;
 	}
 
 }
