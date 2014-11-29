@@ -74,7 +74,8 @@ return undef;
 # an error message if so
 sub feature_clash
 {
-if (!$_[1] || $_[1] eq 'dom') {
+local ($d, $field) = @_;
+if (!$field || $field eq 'dom') {
 	# Clash checking disabled, as we can replace existing domains
 	#local $dbh = &connect_to_database();
 	#local $cmd = $dbh->prepare("select name from domains where name = ? and type = 'NATIVE'");
