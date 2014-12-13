@@ -275,14 +275,14 @@ local $dbh = &connect_to_database();
 local $id = &domain_id($dbh, $_[0]->{'dom'});
 &$virtual_server::first_print($text{'backup_dom'});
 if ($id) {
-	&open_tempfile(BFILE, ">$file");
+	&virtual_server::open_tempfile_as_domain_user($d, BFILE, ">$file");
 	local $cmd = $dbh->prepare("select name, type, ttl, prio, content from records where domain_id = ?");
 	$cmd->execute($id);
 	while(my @r = $cmd->fetchrow()) {
 		&print_tempfile(BFILE, join("\t", @r),"\n");
 		}
 	$cmd->finish();
-	&close_tempfile(BFILE);
+	&virtual_server::close_tempfile_as_domain_user($d, BFILE);
 	&$virtual_server::second_print($virtual_server::text{'setup_done'});
 	return 1;
 	}
