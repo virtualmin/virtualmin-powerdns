@@ -1,10 +1,13 @@
 #!/usr/local/bin/perl
+use strict;
+use warnings;
+our %text;
 
 require './virtualmin-powerdns-lib.pl';
 &ui_print_header(undef, $text{'index_header'}, "", undef, 1, 1);
 
 # Check database connection
-($dbh, $err) = &connect_to_database();
+my ($dbh, $err) = &connect_to_database();
 if (!$dbh) {
 	&ui_print_endpage(
 		&ui_config_link('index_edb', [ $err, undef ]));
@@ -12,9 +15,9 @@ if (!$dbh) {
 
 # Show template DNS records
 print &ui_subheading($text{'index_header'});
-$i = 0;
-@table = ( );
-foreach $t (&get_template(), { }, { }) {
+my $i = 0;
+my @table;
+foreach my $t (&get_template(), { }, { }) {
 	push(@table, [
 		&ui_textbox("name_$i", $t->{'name'}, 20),
 		&ui_select("type_$i", $t->{'type'},
@@ -39,4 +42,3 @@ print &ui_form_columns_table(
 	1);
 
 &ui_print_footer("/", $text{'index'});
-

@@ -1,4 +1,7 @@
 # Defines functions for this feature
+use strict;
+use warnings;
+our (%text);
 
 require 'virtualmin-powerdns-lib.pl';
 
@@ -28,7 +31,7 @@ return $text{'feat_disname'};
 # editing form
 sub feature_label
 {
-local ($edit) = @_;
+my ($edit) = @_;
 return $edit ? $text{'feat_label2'} : $text{'feat_label'};
 }
 
@@ -42,14 +45,13 @@ return "label";
 # or an error message if not
 sub feature_check
 {
-local ($dbh, $err) = &connect_to_database();
+my ($dbh, $err) = &connect_to_database();
 if (!$dbh) {
 	return &text('feat_edb', $err);
 	}
-local $tn;
-foreach $tn ("domains", "records") {
+foreach my $tn ("domains", "records") {
 	eval {
-		local $tcmd = $dbh->prepare("select count(*) from $tn");
+		my $tcmd = $dbh->prepare("select count(*) from $tn");
 		$tcmd->execute();
 		$tcmd->finish();
 		};
@@ -74,13 +76,13 @@ return undef;
 # an error message if so
 sub feature_clash
 {
-local ($d, $field) = @_;
+my ($d, $field) = @_;
 if (!$field || $field eq 'dom') {
 	# Clash checking disabled, as we can replace existing domains
-	#local $dbh = &connect_to_database();
-	#local $cmd = $dbh->prepare("select name from domains where name = ? and type = 'NATIVE'");
+	#my $dbh = &connect_to_database();
+	#my $cmd = $dbh->prepare("select name from domains where name = ? and type = 'NATIVE'");
 	#$cmd->execute($_[0]->{'dom'});
-	#local ($clash) = $cmd->fetchrow();
+	#my ($clash) = $cmd->fetchrow();
 	#$cmd->finish();
 	#$dbh->disconnect();
 	#return $clash ? &text('feat_clash') : undef;
@@ -103,19 +105,19 @@ sub feature_setup
 &$virtual_server::first_print($text{'setup_dom'});
 
 # Check if already there
-local $dbh = &connect_to_database();
-local $id = &domain_id($dbh, $_[0]->{'dom'});
+my $dbh = &connect_to_database();
+my $id = &domain_id($dbh, $_[0]->{'dom'});
 if ($id) {
 	# Yes! Just update IPs
-	local $newip = $_[0]->{'dns_ip'} || $_[0]->{'ip'};
-	local $fixcmd = $dbh->prepare("update records set content = ? where domain_id = ? and type = 'A'");
+	my $newip = $_[0]->{'dns_ip'} || $_[0]->{'ip'};
+	my $fixcmd = $dbh->prepare("update records set content = ? where domain_id = ? and type = 'A'");
 	$fixcmd->execute($newip, $id);
 	$fixcmd->finish();
 	&$virtual_server::second_print($text{'setup_fixed'});
 	}
 else {
 	# Add the domain
-	local $domcmd = $dbh->prepare("insert into domains (name, type) values (?, 'NATIVE')");
+	my $domcmd = $dbh->prepare("insert into domains (name, type) values (?, 'NATIVE')");
 	$domcmd->execute($_[0]->{'dom'});
 	$domcmd->finish();
 	&increment_domain_seq($dbh);
@@ -124,12 +126,11 @@ else {
 	$id = &domain_id($dbh, $_[0]->{'dom'});
 
 	# Add the records
-	local $reccmd = $dbh->prepare("insert into records (domain_id, name, type, ttl, prio, content) values (?, ?, ?, ?, ?, ?)");
-	local $r;
-	foreach $r (&get_template()) {
-		local $v = &virtual_server::substitute_template(
+	my $reccmd = $dbh->prepare("insert into records (domain_id, name, type, ttl, prio, content) values (?, ?, ?, ?, ?, ?)");
+	foreach my $r (&get_template()) {
+		my $v = &virtual_server::substitute_template(
 				$r->{'value'}, $_[0]);
-		local $prio = 0;
+		my $prio = 0;
 		if (uc($r->{'type'}) eq 'MX' &&
 		    $v =~ /^(\d+)\s+(\S+)$/) {
 			# Split up MX priority and hostname
@@ -159,18 +160,18 @@ $dbh->disconnect();
 # Called when a domain with this feature is modified
 sub feature_modify
 {
-local $dbh = &connect_to_database();
+my $dbh = &connect_to_database();
 if ($_[0]->{'dom'} ne $_[1]->{'dom'}) {
 	# Domain has been re-named .. update domain entry and all records
 	&$virtual_server::first_print($text{'save_dom'});
-	local $id = &domain_id($dbh, $_[1]->{'dom'});
+	my $id = &domain_id($dbh, $_[1]->{'dom'});
 	if ($id) {
-		local $rencmd = $dbh->prepare("update domains set name = ? where id = ?");
+		my $rencmd = $dbh->prepare("update domains set name = ? where id = ?");
 		$rencmd->execute($_[0]->{'dom'}, $id);
 		$rencmd->finish();
-		local $reccmd = $dbh->prepare("select id,name,content from records where domain_id = ?");
+		my $reccmd = $dbh->prepare("select id,name,content from records where domain_id = ?");
 		$reccmd->execute($id);
-		local $fixcmd = $dbh->prepare("update records set name = ?, content = ? where id = ? and domain_id = ?");
+		my $fixcmd = $dbh->prepare("update records set name = ?, content = ? where id = ? and domain_id = ?");
 		while(my ($recid, $name, $content) = $reccmd->fetchrow()) {
 			$name =~ s/$_[1]->{'dom'}$/$_[0]->{'dom'}/g;
 			$content =~ s/$_[1]->{'dom'}/$_[0]->{'dom'}/g;
@@ -186,14 +187,14 @@ if ($_[0]->{'dom'} ne $_[1]->{'dom'}) {
 		&$virtual_server::second_print($text{'delete_missing'});
 		}
 	}
-local $newip = $_[0]->{'dns_ip'} || $_[0]->{'ip'};
-local $oldip = $_[1]->{'dns_ip'} || $_[1]->{'ip'};
+my $newip = $_[0]->{'dns_ip'} || $_[0]->{'ip'};
+my $oldip = $_[1]->{'dns_ip'} || $_[1]->{'ip'};
 if ($newip ne $oldip) {
 	# IP has changed .. update all records
 	&$virtual_server::first_print($text{'save_dom'});
-	local $id = &domain_id($dbh, $_[0]->{'dom'});
+	my $id = &domain_id($dbh, $_[0]->{'dom'});
 	if ($id) {
-		local $ipcmd = $dbh->prepare("update records set content = ? where domain_id = ? and content = ?");
+		my $ipcmd = $dbh->prepare("update records set content = ? where domain_id = ? and content = ?");
 		$ipcmd->execute($newip, $id, $oldip);
 		$ipcmd->finish();
 		&bump_domain_soa($dbh, $id);
@@ -212,22 +213,22 @@ $dbh->disconnect();
 sub feature_delete
 {
 &$virtual_server::first_print($text{'delete_dom'});
-local $dbh = &connect_to_database();
-local $id = &domain_id($dbh, $_[0]->{'dom'});
+my $dbh = &connect_to_database();
+my $id = &domain_id($dbh, $_[0]->{'dom'});
 if ($id) {
 	# Check first if any IPs are for this sytem
-	local $myipcmd =  $dbh->prepare("select count(*) from records where domain_id = ? and content = ?");
-	local $ip = $_[0]->{'dns_ip'} || $_[0]->{'ip'};
+	my $myipcmd =  $dbh->prepare("select count(*) from records where domain_id = ? and content = ?");
+	my $ip = $_[0]->{'dns_ip'} || $_[0]->{'ip'};
 	$myipcmd->execute($id, $ip);
-	local ($count) = $myipcmd->fetchrow();
+	my ($count) = $myipcmd->fetchrow();
 	$myipcmd->finish();
 
 	if ($count) {
 		# Delete the domain and records
-		local $delreccmd = $dbh->prepare("delete from records where domain_id = ?");
+		my $delreccmd = $dbh->prepare("delete from records where domain_id = ?");
 		$delreccmd->execute($id);
 		$delreccmd->finish();
-		local $deldomcmd = $dbh->prepare("delete from domains where id = ?");
+		my $deldomcmd = $dbh->prepare("delete from domains where id = ?");
 		$deldomcmd->execute($id);
 		$deldomcmd->finish();
 		&$virtual_server::second_print($virtual_server::text{'setup_done'});
@@ -270,19 +271,21 @@ return ( );
 # on success or 0 on failure
 sub feature_backup
 {
-local ($d, $file, $opts, $allopts) = @_;
-local $dbh = &connect_to_database();
-local $id = &domain_id($dbh, $_[0]->{'dom'});
+my ($d, $file, $opts, $allopts) = @_;
+my $dbh = &connect_to_database();
+my $id = &domain_id($dbh, $_[0]->{'dom'});
 &$virtual_server::first_print($text{'backup_dom'});
 if ($id) {
+	no strict "subs";
 	&virtual_server::open_tempfile_as_domain_user($d, BFILE, ">$file");
-	local $cmd = $dbh->prepare("select name, type, ttl, prio, content from records where domain_id = ?");
+	my $cmd = $dbh->prepare("select name, type, ttl, prio, content from records where domain_id = ?");
 	$cmd->execute($id);
 	while(my @r = $cmd->fetchrow()) {
 		&print_tempfile(BFILE, join("\t", @r),"\n");
 		}
 	$cmd->finish();
 	&virtual_server::close_tempfile_as_domain_user($d, BFILE);
+	use strict "subs";
 	&$virtual_server::second_print($virtual_server::text{'setup_done'});
 	return 1;
 	}
@@ -297,26 +300,26 @@ else {
 # return 1 on success or 0 on failure
 sub feature_restore
 {
-local ($d, $file, $opts, $allopts) = @_;
-local $dbh = &connect_to_database();
-local $id = &domain_id($dbh, $_[0]->{'dom'});
+my ($d, $file, $opts, $allopts) = @_;
+my $dbh = &connect_to_database();
+my $id = &domain_id($dbh, $_[0]->{'dom'});
 &$virtual_server::first_print($text{'restore_dom'});
 if ($id) {
 	# Remove all old records
-	local $delreccmd = $dbh->prepare("delete from records where domain_id = ?");
+	my $delreccmd = $dbh->prepare("delete from records where domain_id = ?");
 	$delreccmd->execute($id);
 	$delreccmd->finish();
 
 	# Create new from file
-	local $reccmd = $dbh->prepare("insert into records (domain_id, name, type, ttl, prio, content) values (?, ?, ?, ?, ?, ?)");
-	open(BFILE, $file);
-	while(<BFILE>) {
+	my $reccmd = $dbh->prepare("insert into records (domain_id, name, type, ttl, prio, content) values (?, ?, ?, ?, ?, ?)");
+	open(my $BFILE, "<", $file);
+	while(<$BFILE>) {
 		s/\r|\n//g;
-		local @r = split(/\t/, $_);
+		my @r = split(/\t/, $_);
 		$reccmd->execute($id, @r);
 		$reccmd->finish();
 		}
-	close(BFILE);
+	close($BFILE);
 	&increment_record_seq($dbh);
 	&$virtual_server::second_print($virtual_server::text{'setup_done'});
 	return 1;
@@ -330,10 +333,10 @@ else {
 
 sub increment_domain_seq
 {
-local ($dbh) = @_;
+my ($dbh) = @_;
 eval {
 	# Ignore failures, as some systems don't have this table
-	local $inccmd = $dbh->prepare("UPDATE domains_seq SET id=(SELECT MAX(d.id) FROM domains d)");
+	my $inccmd = $dbh->prepare("UPDATE domains_seq SET id=(SELECT MAX(d.id) FROM domains d)");
 	$inccmd->execute();
 	$inccmd->finish();
 	};
@@ -341,10 +344,10 @@ eval {
 
 sub increment_record_seq
 {
-local ($dbh) = @_;
+my ($dbh) = @_;
 eval {
 	# Ignore failures, as some systems don't have this table
-	local $inccmd = $dbh->prepare("UPDATE records_seq SET id=(SELECT MAX(r.id) FROM records r)");
+	my $inccmd = $dbh->prepare("UPDATE records_seq SET id=(SELECT MAX(r.id) FROM records r)");
 	$inccmd->execute();
 	$inccmd->finish();
 	};
@@ -354,13 +357,13 @@ eval {
 # Bump the SOA by 1 in a domain
 sub bump_domain_soa
 {
-local ($dbh, $id) = @_;
+my ($dbh, $id) = @_;
 my $cmd = $dbh->prepare("select content from records where domain_id = ? and type = 'SOA'");
 $cmd->execute($id);
 my $content = $cmd->fetchrow();
 $cmd->finish();
 if ($content) {
-	local @w = split(/\s+/, $content);
+	my @w = split(/\s+/, $content);
 	$w[2]++;
 	$content = join(" ", @w);
 	$cmd = $dbh->prepare("update records set content = ? where domain_id = ? and type = 'SOA'");
@@ -370,4 +373,3 @@ if ($content) {
 }
 
 1;
-
