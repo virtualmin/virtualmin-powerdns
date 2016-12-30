@@ -56,6 +56,7 @@ foreach my $tn ("domains", "records") {
 		$tcmd->finish();
 		};
 	if ($@) {
+		$dbh->disconnect();
 		return &text('feat_etable', "<tt>$tn</tt>");
 		}
 	}
