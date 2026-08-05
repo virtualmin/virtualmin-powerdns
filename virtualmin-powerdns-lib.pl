@@ -8,22 +8,38 @@ BEGIN { push(@INC, ".."); };
 eval "use WebminCore;";
 &init_config();
 
+# clean_powerdns_database_error(error)
+# Remove Perl source locations from errors before displaying them to users.
+sub clean_powerdns_database_error
+{
+my ($err) = @_;
+$err ||= "Unknown error";
+$err =~ s/\s+at\s+(?:\(eval\s+\d+\)|\S+)\s+line\s+\d+.*$//s;
+return $err;
+}
+
 # connect_to_database()
 sub connect_to_database
 {
 eval "use DBI;";
-return $@ if ($@);
-my ($dbh, $err);
+if ($@) {
+	my $err = &clean_powerdns_database_error($@);
+	return wantarray ? (undef, $err) : undef;
+	}
+my ($dbh, $err, $drh);
 eval {
-	my $drh = DBI->install_driver("mysql");
+	$drh = DBI->install_driver("mysql");
 	$dbh = $drh->connect("database=$config{'db'}".
 			     ($config{'host'} ? ";host=$config{'host'}" : ""),
-			     $config{'user'}, $config{'pass'}, { });
+			     $config{'user'}, $config{'pass'},
+			     { 'PrintError' => 1 });
 	};
-if ($@ || !$dbh) {
-	$err = $@ || "Unknown error";
+my $eval_err = $@;
+if ($eval_err || !$dbh) {
+	my $driver_err = $drh ? $drh->errstr : undef;
+	$err = $eval_err || $driver_err || "Unknown error";
 	}
-$err =~ s/\s+at\s+.*//;
+$err = &clean_powerdns_database_error($err) if ($err);
 return wantarray ? ($dbh, $err) : $dbh;
 }
 

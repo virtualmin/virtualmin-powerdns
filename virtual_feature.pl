@@ -273,9 +273,13 @@ return ( );
 sub feature_backup
 {
 my ($d, $file, $opts, $allopts) = @_;
-my $dbh = &connect_to_database();
-my $id = &domain_id($dbh, $_[0]->{'dom'});
 &$virtual_server::first_print($text{'backup_dom'});
+my ($dbh, $err) = &connect_to_database();
+if (!$dbh) {
+	&$virtual_server::second_print(&text('feat_edb', $err));
+	return 0;
+	}
+my $id = &domain_id($dbh, $d->{'dom'});
 if ($id) {
 	no strict "subs";
 	&virtual_server::open_tempfile_as_domain_user($d, BFILE, ">$file");
@@ -287,10 +291,12 @@ if ($id) {
 	$cmd->finish();
 	&virtual_server::close_tempfile_as_domain_user($d, BFILE);
 	use strict "subs";
+	$dbh->disconnect();
 	&$virtual_server::second_print($virtual_server::text{'setup_done'});
 	return 1;
 	}
 else {
+	$dbh->disconnect();
 	&$virtual_server::second_print($text{'delete_missing'});
 	return 0;
 	}
@@ -302,9 +308,13 @@ else {
 sub feature_restore
 {
 my ($d, $file, $opts, $allopts) = @_;
-my $dbh = &connect_to_database();
-my $id = &domain_id($dbh, $_[0]->{'dom'});
 &$virtual_server::first_print($text{'restore_dom'});
+my ($dbh, $err) = &connect_to_database();
+if (!$dbh) {
+	&$virtual_server::second_print(&text('feat_edb', $err));
+	return 0;
+	}
+my $id = &domain_id($dbh, $d->{'dom'});
 if ($id) {
 	# Remove all old records
 	my $delreccmd = $dbh->prepare("delete from records where domain_id = ?");
@@ -322,10 +332,12 @@ if ($id) {
 		}
 	close($BFILE);
 	&increment_record_seq($dbh);
+	$dbh->disconnect();
 	&$virtual_server::second_print($virtual_server::text{'setup_done'});
 	return 1;
 	}
 else {
+	$dbh->disconnect();
 	&$virtual_server::second_print($text{'delete_missing'});
 	return 0;
 	}
